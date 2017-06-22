@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.github.florent37.parallax.ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:dex="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.github.florent37.parallax.ParallaxView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:parallaxVertical="0.8">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <com.flaviofaria.kenburnsview.KenBurnsView
+                    android:id="@+id/backdrop"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:alpha="0.8"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/google" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_alignParentBottom="true"
+                    android:background="@drawable/image_trans" />
+
+            </RelativeLayout>
+
+        </com.github.florent37.parallax.ParallaxView>
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/cvContent"
+            android:layout_width="450dp"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="12dp"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:layout_marginTop="160dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="3dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_margin="10dp">
+
+                        <ImageView
+                            android:id="@+id/img_movie"
+                            android:layout_width="110dp"
+                            android:layout_height="160dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/google" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/title"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:lines="1"
+                                android:maxLines="1"
+                                android:paddingLeft="16dp"
+                                style="@style/TextAppearance.AppCompat.Title"
+                                android:text="Transformers"/>
+
+                            <TextView
+                                android:id="@+id/month"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:lines="1"
+                                android:maxLines="1"
+                                android:paddingLeft="16dp"
+                                android:textColor="@color/colorDivider"
+                                android:textSize="12dp"
+                                android:text="August 2017"/>
+
+                            <TextView
+                                android:id="@+id/rating"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:lines="1"
+                                android:maxLines="1"
+                                android:paddingLeft="16dp"
+                                android:textColor="@color/colorDivider"
+                                android:textSize="12dp"
+                                android:text="Average rating: 7.5"/>
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="16dp"
+                        android:layout_marginTop="5dp"
+                        android:orientation="vertical">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginBottom="5dp"
+                            android:background="#dadada" />
+
+                        <TextView
+                            android:id="@+id/deskripsi"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="14dp"
+                            android:textColor="#888"
+                            android:textSize="12dp" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginBottom="10dp"
+                            android:background="#dadada" />
+
+                        <android.support.v7.widget.RecyclerView
+                            android:id="@+id/rv_trailer"
+                            android:layout_width="match_parent"
+                            android:layout_height="120dp"
+                            android:layout_marginBottom="20dp">
+
+                        </android.support.v7.widget.RecyclerView>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:layout_width="450dp"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="12dp"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="3dp"
+            android:layout_below="@+id/cvContent">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tvNoReviews"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.AppCompat.Caption"
+                    android:text="No reviews yet"
+                    android:layout_margin="15dp"
+                    android:textAlignment="center"
+                    android:visibility="gone"/>
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rv_review"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:visibility="gone">
+
+                </android.support.v7.widget.RecyclerView>
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+
+    </RelativeLayout>
+
+</com.github.florent37.parallax.ScrollView>
