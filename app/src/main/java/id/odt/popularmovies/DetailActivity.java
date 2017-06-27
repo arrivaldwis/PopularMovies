@@ -100,7 +100,7 @@ public class DetailActivity extends AppCompatActivity {
             Intent intent = getIntent();
             movieId = intent.getIntExtra("id", 0);
             setTitle(intent.getStringExtra("title"));
-            Picasso.with(this).load("http://image.tmdb.org/t/p/w500" + intent.getStringExtra("backdrop")).into(backdrop);
+            Picasso.with(this).load("http://image.tmdb.org/t/p/w1000" + intent.getStringExtra("backdrop")).into(backdrop);
             Picasso.with(this).load("http://image.tmdb.org/t/p/w185" + intent.getStringExtra("poster")).into(mMoviePoster);
             tvTitle.setText(intent.getStringExtra("title"));
             try {
