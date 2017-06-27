@@ -7,4 +7,13 @@
     <color name="colorSecondary_text">#757575</color>
     <color name="colorIcons">#FFFFFF</color>
     <color name="colorDivider">#BDBDBD</color>
+
+    <color name="starFullySelected">#FF2A21</color>
+    <color name="starPartiallySelected">#FF2A21</color>
+    <color name="starNotSelected">#00796B</color>
+
+    <color name="favorite_not_selected">#757575</color>
+    <color name="favorite_selected">#FF2A21</color>
+    <color name="text_favorite_not_selected">#767676</color>
+    <color name="text_favorite_selected">#FFFFFF</color>
 </resources>

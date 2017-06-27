@@ -1,3 +1,28 @@
 <resources>
     <string name="app_name">Popular Movies</string>
+    <string name="menu_share">Share</string>
+
+    <string name="title_activity_movie_details">MovieDetailsActivity</string>
+    <string name="label_text_button_favorite">MARK AS FAVORITE</string>
+    <string name="label_text_view_trailers">Trailers:</string>
+    <string name="label_text_view_reviews">Reviews:</string>
+    <string name="label_text_view_release_date">Release Date:</string>
+    <string name="label_text_view_duration">Duration:</string>
+    <string name="label_text_view_empty_trailers">No trailers available for this movie.</string>
+    <string name="label_text_view_empty_reviews">No reviews available for this movie.</string>
+    <string name="label_movie_marked_favorite">This movie is added to your Favorites.</string>
+    <string name="label_movie_marked_not_favorite">This movie is removed from your Favorites.</string>
+    <string name="label_text_view_no_overview">No overview details available for this movie.</string>
+    <string name="label_text_view_no_date">No date available.</string>
+    <string name="label_text_view_no_movies_as_favorite">No movies being selected as Favorite by you.</string>
+    <string name="action_share">Share</string>
+
+    <string name="sync_account_type">popularmovies.com</string>
+    <string name="content_authority">id.odt.popularmoview</string>
+    <string name="pref_movie_status_key" translatable="false">movie-status</string>
+    <string name="share_title">Share movie trailer</string>
+    <string name="empty_movies_list">No Movies Information Available. The Network is not available to fetch movies data.</string>
+    <string name="empty_movies_list_no_network">No Movies Information Available. The Network is not available to fetch movies data.</string>
+    <string name="empty_movies_list_server_down">No Movies information available. The server is not returning data.</string>
+    <string name="empty_movies_list_server_error">No Movies information available. The server is not returning valid data. Please check for an updated version of Popular Movies.</string>
 </resources>

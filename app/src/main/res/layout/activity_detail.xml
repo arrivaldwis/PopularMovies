@@ -62,8 +62,8 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_margin="10dp">
+                        android:layout_margin="10dp"
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:id="@+id/img_movie"
@@ -77,15 +77,32 @@
                             android:layout_height="wrap_content"
                             android:orientation="vertical">
 
-                            <TextView
-                                android:id="@+id/title"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:lines="1"
-                                android:maxLines="1"
-                                android:paddingLeft="16dp"
-                                style="@style/TextAppearance.AppCompat.Title"
-                                android:text="Transformers"/>
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:id="@+id/title"
+                                    style="@style/TextAppearance.AppCompat.Title"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_toLeftOf="@+id/img_favourite"
+                                    android:lines="1"
+                                    android:maxLines="1"
+                                    android:paddingLeft="12dp"
+                                    android:text="Transformers" />
+
+                                <ImageView
+                                    android:id="@+id/img_favourite"
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_marginTop="6dp"
+                                    android:layout_marginLeft="16dp"
+                                    android:layout_alignParentRight="true"
+                                    android:src="@drawable/ic_star"
+                                    android:layout_centerVertical="true"/>
+
+                            </RelativeLayout>
 
                             <TextView
                                 android:id="@+id/month"
@@ -94,10 +111,10 @@
                                 android:layout_marginTop="6dp"
                                 android:lines="1"
                                 android:maxLines="1"
-                                android:paddingLeft="16dp"
+                                android:paddingLeft="12dp"
+                                android:text="August 2017"
                                 android:textColor="@color/colorDivider"
-                                android:textSize="12dp"
-                                android:text="August 2017"/>
+                                android:textSize="12dp" />
 
                             <TextView
                                 android:id="@+id/rating"
@@ -106,10 +123,10 @@
                                 android:layout_marginTop="6dp"
                                 android:lines="1"
                                 android:maxLines="1"
-                                android:paddingLeft="16dp"
+                                android:paddingLeft="12dp"
+                                android:text="Average rating: 7.5"
                                 android:textColor="@color/colorDivider"
-                                android:textSize="12dp"
-                                android:text="Average rating: 7.5"/>
+                                android:textSize="12dp" />
 
                         </LinearLayout>
                     </LinearLayout>
@@ -125,7 +142,6 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginBottom="5dp"
                             android:background="#dadada" />
 
                         <TextView
@@ -161,26 +177,27 @@
         <android.support.v7.widget.CardView
             android:layout_width="450dp"
             android:layout_height="wrap_content"
+            android:layout_below="@+id/cvContent"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="12dp"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
             app:cardCornerRadius="8dp"
-            app:cardElevation="3dp"
-            android:layout_below="@+id/cvContent">
+            app:cardElevation="3dp">
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/tvNoReviews"
+                    style="@style/TextAppearance.AppCompat.Caption"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/TextAppearance.AppCompat.Caption"
-                    android:text="No reviews yet"
                     android:layout_margin="15dp"
+                    android:text="No reviews yet"
                     android:textAlignment="center"
-                    android:visibility="gone"/>
+                    android:visibility="gone" />
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/rv_review"

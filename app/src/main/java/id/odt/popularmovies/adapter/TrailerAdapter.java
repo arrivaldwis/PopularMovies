@@ -12,6 +12,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -67,7 +68,11 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v="+movies.getKey()));
-                context.startActivity(intent);
+                try {
+                    context.startActivity(intent);
+                } catch (Exception ex) {
+                    Toast.makeText(context, "No apps support to open the url!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 

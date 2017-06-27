@@ -17,6 +17,10 @@
                 android:id="@+id/sortTopRated"
                 android:title="Top Rated Movies"
                 android:visible="true"/>
+            <item
+                android:id="@+id/sortFavourite"
+                android:title="Favourite Movies"
+                android:visible="true"/>
         </menu>
     </item>
 </menu>
