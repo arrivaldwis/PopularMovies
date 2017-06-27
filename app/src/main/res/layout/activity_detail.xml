@@ -43,10 +43,10 @@
             android:layout_width="450dp"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
-            android:layout_marginTop="160dp"
+            android:layout_marginBottom="@dimen/margin_medium"
+            android:layout_marginLeft="@dimen/margin_medium"
+            android:layout_marginRight="@dimen/margin_medium"
+            android:layout_marginTop="@dimen/margin_top_high"
             app:cardCornerRadius="8dp"
             app:cardElevation="3dp">
 
@@ -97,7 +97,6 @@
                                     android:layout_width="20dp"
                                     android:layout_height="20dp"
                                     android:layout_marginTop="6dp"
-                                    android:layout_marginLeft="16dp"
                                     android:layout_alignParentRight="true"
                                     android:src="@drawable/ic_star"
                                     android:layout_centerVertical="true"/>

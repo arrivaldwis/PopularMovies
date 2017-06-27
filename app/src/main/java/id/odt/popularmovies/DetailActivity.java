@@ -2,27 +2,18 @@ package id.odt.popularmovies;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 import butterknife.BindView;
@@ -46,20 +36,16 @@ import id.odt.popularmovies.adapter.TrailerAdapter;
 import id.odt.popularmovies.config.APIService;
 import id.odt.popularmovies.config.Constant;
 import id.odt.popularmovies.config.MyLinearLayoutManager;
-import id.odt.popularmovies.data.PopularMoviesContract;
-import id.odt.popularmovies.model.MoviesModel;
-import id.odt.popularmovies.model.MoviesResult;
 import id.odt.popularmovies.model.ReviewsModel;
 import id.odt.popularmovies.model.ReviewsResult;
 import id.odt.popularmovies.model.TrailerModel;
 import id.odt.popularmovies.model.TrailerResult;
-import id.odt.popularmovies.sync.MovieDataLoader;
-import id.odt.popularmovies.sync.PopularMoviesSyncAdapter;
+import id.odt.popularmovies.sync.SyncAdapter;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class DetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, SharedPreferences.OnSharedPreferenceChangeListener {
+public class DetailActivity extends AppCompatActivity {
 
     private String TAG;
 
@@ -91,38 +77,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     private ArrayList<ReviewsResult> reviewsList;
     private ArrayList<TrailerResult> trailerList;
     private int movieId;
-    private SharedPreferences mPrefs = null;
-    private boolean mIsPreferenceChanged = false;
-    private MenuItem mShareMenuItem;
-    public static final String FAVORITE_MOVIE_IDS_SET_KEY = "movie_id_set_key";
-    private Toast mFavoriteToast;
-    private String mFirstTrailerUrl = null;
-    private ShareActionProvider mShareActionProvider;
-    public static final int COL_KEY = 4;
-    private static final int MOVIE_TRAILER_LOADER = 0;
-    private static final int MOVIE_REVIEW_LOADER = 1;
-    public static final String[] MOVIE_TRAILER_COLUMNS = {
-            PopularMoviesContract.MovieTrailerEntry.TABLE_NAME + "." + PopularMoviesContract.MovieTrailerEntry._ID,
-            PopularMoviesContract.MovieTrailerEntry.TABLE_NAME + "." + PopularMoviesContract.MovieTrailerEntry.COLUMN_MOVIE_ID,
-            PopularMoviesContract.MovieTrailerEntry.COLUMN_TRAILER_ID,
-            PopularMoviesContract.MovieTrailerEntry.COLUMN_ISO_369_1,
-            PopularMoviesContract.MovieTrailerEntry.COLUMN_KEY,
-            PopularMoviesContract.MovieTrailerEntry.COLUMN_NAME,
-            PopularMoviesContract.MovieTrailerEntry.COLUMN_SITE,
-            PopularMoviesContract.MovieTrailerEntry.COLUMN_SIZE,
-            PopularMoviesContract.MovieTrailerEntry.COLUMN_TYPE,
-            PopularMoviesContract.MovieTrailerEntry.TABLE_NAME + "." + PopularMoviesContract.MovieTrailerEntry.COLUMN_DATE
-    };
-
-    public static final String[] MOVIE_REVIEWS_COLUMNS = {
-            PopularMoviesContract.MovieReviewEntry.TABLE_NAME + "." + PopularMoviesContract.MovieReviewEntry._ID,
-            PopularMoviesContract.MovieReviewEntry.TABLE_NAME + "." + PopularMoviesContract.MovieReviewEntry.COLUMN_MOVIE_ID,
-            PopularMoviesContract.MovieReviewEntry.COLUMN_REVIEW_ID,
-            PopularMoviesContract.MovieReviewEntry.COLUMN_AUTHOR,
-            PopularMoviesContract.MovieReviewEntry.COLUMN_CONTENT,
-            PopularMoviesContract.MovieReviewEntry.COLUMN_URL,
-            PopularMoviesContract.MovieReviewEntry.TABLE_NAME + "." + PopularMoviesContract.MovieReviewEntry.COLUMN_DATE
-    };
+    private SharedPreferences mPref = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,10 +91,10 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         reviewsList = new ArrayList<>();
         trailerList = new ArrayList<>();
-        if (mPrefs == null) {
-            mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        if (mPref == null) {
+            mPref = PreferenceManager.getDefaultSharedPreferences(this);
         }
-        mPrefs.registerOnSharedPreferenceChangeListener(this);
 
         if (getIntent().getExtras() != null) {
             Intent intent = getIntent();
@@ -180,14 +135,12 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
                 public void onClick(View view) {
                     boolean isAlreadyFavorite = isMovieFavorite();
 
-                    int labelId = -1;
                     int backgroundColorId = -1;
-                    int textColorId = -1;
 
                     Set<String> favoriteMovieIdsSet = null;
 
-                    if (mPrefs.contains(FAVORITE_MOVIE_IDS_SET_KEY)) {
-                        favoriteMovieIdsSet = mPrefs.getStringSet(FAVORITE_MOVIE_IDS_SET_KEY, null);
+                    if (mPref.contains(Constant.MOVIE_IDS_FAVOURITE)) {
+                        favoriteMovieIdsSet = mPref.getStringSet(Constant.MOVIE_IDS_FAVOURITE, null);
                     }
 
                     if (favoriteMovieIdsSet == null) {
@@ -196,26 +149,16 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
                     if (isAlreadyFavorite) {
                         favoriteMovieIdsSet.remove(Integer.toString(movieId));
-                        labelId = R.string.label_movie_marked_not_favorite;
                         backgroundColorId = R.color.favorite_not_selected;
-                        PopularMoviesSyncAdapter.syncImmediately(getApplicationContext());
+                        SyncAdapter.syncImmediately(getApplicationContext());
                     } else {
                         favoriteMovieIdsSet.add(Integer.toString(movieId));
-                        final SharedPreferences.Editor prefsEdit = mPrefs.edit();
-                        prefsEdit.putStringSet(FAVORITE_MOVIE_IDS_SET_KEY, favoriteMovieIdsSet);
+                        final SharedPreferences.Editor prefsEdit = mPref.edit();
+                        prefsEdit.putStringSet(Constant.MOVIE_IDS_FAVOURITE, favoriteMovieIdsSet);
                         prefsEdit.commit();
-
-                        labelId = R.string.label_movie_marked_favorite;
                         backgroundColorId = R.color.favorite_selected;
                     }
 
-                    if (mFavoriteToast != null) {
-                        mFavoriteToast.cancel();
-                    }
-
-                    mFavoriteToast = Toast.makeText(DetailActivity.this, getString(labelId), Toast.LENGTH_SHORT);
-
-                    mFavoriteToast.show();
                     img_favourite.setColorFilter(ContextCompat.getColor(getApplicationContext(),backgroundColorId));
                 }
             });
@@ -224,8 +167,6 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        //mShareMenuItem = menu.findItem(R.id.action_share);
-        //mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(mShareMenuItem);
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu_details, menu);
         return true;
@@ -235,12 +176,12 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         boolean result = false;
         Set<String> favoriteMovieIdsSet = null;
 
-        if (mPrefs == null) {
-            mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (mPref == null) {
+            mPref = PreferenceManager.getDefaultSharedPreferences(this);
         }
 
-        if (mPrefs.contains(FAVORITE_MOVIE_IDS_SET_KEY)) {
-            favoriteMovieIdsSet = mPrefs.getStringSet(FAVORITE_MOVIE_IDS_SET_KEY, null);
+        if (mPref.contains(Constant.MOVIE_IDS_FAVOURITE)) {
+            favoriteMovieIdsSet = mPref.getStringSet(Constant.MOVIE_IDS_FAVOURITE, null);
         }
 
         if (favoriteMovieIdsSet != null) {
@@ -342,96 +283,5 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     public void onBackPressed() {
         super.onBackPressed();
         finish();
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-        if (s.equals(getString(R.string.pref_sort_order_key))) {
-            mIsPreferenceChanged = true;
-            if (mShareMenuItem != null) mShareMenuItem.setVisible(false);
-        }
-    }
-
-    private Intent createShareTrailerUrlIntent() {
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-
-        shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-        shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, mFirstTrailerUrl);
-
-        return shareIntent;
-    }
-
-    private void populateFirstTrailerUrl(Cursor cursor) {
-        @MovieDataLoader.MovieStatus int status = Constant.getMovieStatus(getApplicationContext());
-        switch (status) {
-            case MovieDataLoader.MOVIE_STATUS_OK:
-                if (cursor != null && cursor.moveToFirst()) {
-                    mFirstTrailerUrl = "https://www.youtube.com/watch?v=" + cursor.getString(COL_KEY);
-                    if (mShareMenuItem != null) {
-                        mShareMenuItem.setVisible(true);
-                    }
-
-                    if (mShareActionProvider != null) {
-                        // If onLoadFinished happens before this, we can go ahead and set the share intent now.
-                        mShareActionProvider.setShareIntent(createShareTrailerUrlIntent());
-                    }
-
-                }
-                break;
-            default:
-                if (mShareMenuItem != null) {
-                    mShareMenuItem.setVisible(false);
-                }
-                break;
-        }
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        switch (id) {
-            case MOVIE_TRAILER_LOADER:
-                Uri trackUri = PopularMoviesContract.MovieTrailerEntry.buildMovieTrailerUri(movieId);
-
-                return new CursorLoader(this,
-                        trackUri,
-                        MOVIE_TRAILER_COLUMNS,
-                        null,
-                        null,
-                        null);
-
-            case MOVIE_REVIEW_LOADER:
-                Uri reviewUri = PopularMoviesContract.MovieReviewEntry.buildMovieReviewsUri(movieId);
-
-                return new CursorLoader(this,
-                        reviewUri,
-                        MOVIE_REVIEWS_COLUMNS,
-                        null,
-                        null,
-                        null);
-            default:
-                return null;
-        }
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        switch (loader.getId()) {
-            case MOVIE_TRAILER_LOADER:
-                populateFirstTrailerUrl(data);
-                break;
-            case MOVIE_REVIEW_LOADER:
-                break;
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        switch (loader.getId()) {
-            case MOVIE_TRAILER_LOADER:
-                break;
-            case MOVIE_REVIEW_LOADER:
-                break;
-        }
     }
 }

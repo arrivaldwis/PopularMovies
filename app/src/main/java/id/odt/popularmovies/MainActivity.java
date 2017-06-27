@@ -2,10 +2,8 @@ package id.odt.popularmovies;
 
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -26,14 +24,12 @@ import butterknife.ButterKnife;
 import id.odt.popularmovies.adapter.MoviesAdapter;
 import id.odt.popularmovies.config.APIService;
 import id.odt.popularmovies.config.Constant;
-import id.odt.popularmovies.data.PopularMoviesContract;
 import id.odt.popularmovies.model.MoviesModel;
 import id.odt.popularmovies.model.MoviesResult;
-import id.odt.popularmovies.sync.PopularMoviesSyncAdapter;
+import id.odt.popularmovies.sync.SyncAdapter;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import id.odt.popularmovies.data.PopularMoviesContract.MovieEntry;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -48,28 +44,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private GridLayoutManager mGridLayoutManager;
     private MoviesAdapter mAdapter;
     private int sortState = 0;
-    private SharedPreferences mPrefs = null;
-    public static final String FAVORITE_MOVIE_IDS_SET_KEY = "movie_id_set_key";
-
-    public static final String[] MOVIE_COLUMNS = {
-            MovieEntry.TABLE_NAME + "." + MovieEntry._ID,
-            MovieEntry.COLUMN_MOVIE_ID,
-            MovieEntry.COLUMN_IS_ADULT,
-            MovieEntry.COLUMN_BACK_DROP_PATH,
-            MovieEntry.COLUMN_ORIGINAL_LANGUAGE,
-            MovieEntry.COLUMN_ORIGINAL_TITLE,
-            MovieEntry.COLUMN_OVERVIEW,
-            MovieEntry.COLUMN_RELEASE_DATE,
-            MovieEntry.COLUMN_POSTER_PATH,
-            MovieEntry.COLUMN_POPULARITY,
-            MovieEntry.COLUMN_TITLE,
-            MovieEntry.COLUMN_IS_VIDEO,
-            MovieEntry.COLUMN_VOTE_AVERAGE,
-            MovieEntry.COLUMN_VOTE_COUNT,
-            MovieEntry.COLUMN_RUNTIME,
-            MovieEntry.COLUMN_STATUS,
-            MovieEntry.COLUMN_DATE
-    };
+    private SharedPreferences mPref = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 loadMovies(sortState);
             }
         });
-        PopularMoviesSyncAdapter.initializeSyncAdapter(this);
+        SyncAdapter.initializeSyncAdapter(this);
     }
 
     private void loadMovies(final int sort) {
@@ -156,22 +131,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private boolean isMovieFavorite(final int movieId) {
         boolean result = false;
-        Set<String> favoriteMovieIdsSet = null;
+        Set<String> movieIdsFav = null;
 
-        if (mPrefs == null) {
-            mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (mPref == null) {
+            mPref = PreferenceManager.getDefaultSharedPreferences(this);
         }
 
-        if (mPrefs.contains(FAVORITE_MOVIE_IDS_SET_KEY)) {
-            favoriteMovieIdsSet = mPrefs.getStringSet(FAVORITE_MOVIE_IDS_SET_KEY, null);
+        if (mPref.contains(Constant.MOVIE_IDS_FAVOURITE)) {
+            movieIdsFav = mPref.getStringSet(Constant.MOVIE_IDS_FAVOURITE, null);
         }
 
-        if (favoriteMovieIdsSet != null) {
-            Iterator<String> favIterator = favoriteMovieIdsSet.iterator();
+        if (movieIdsFav != null) {
+            Iterator<String> favIterate = movieIdsFav.iterator();
 
-            while (favIterator.hasNext()) {
-                String favMovieId = favIterator.next();
-                if (favMovieId.equals(Integer.toString(movieId))) {
+            while (favIterate.hasNext()) {
+                String getMovieId = favIterate.next();
+                if (getMovieId.equals(Integer.toString(movieId))) {
                     result = true;
                     break;
                 }
@@ -193,17 +168,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             case R.id.sortPopular:
                 sortState = 0;
                 loadMovies(sortState);
-                setTitle("Popular Movies");
+                setTitle(getString(R.string.title_popular));
                 return true;
             case R.id.sortTopRated:
                 sortState = 1;
                 loadMovies(sortState);
-                setTitle("Top Rated Movies");
+                setTitle(getString(R.string.title_top_rated));
                 return true;
             case R.id.sortFavourite:
                 sortState = 2;
                 loadMovies(sortState);
-                setTitle("Favourite Movies");
+                setTitle(getString(R.string.title_favourite));
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -211,23 +186,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String sortOrderSelected = prefs.getString(this.getString(R.string.pref_sort_order_key), null);
-
-        String sortOrder = PopularMoviesContract.MovieEntry.COLUMN_POPULARITY + " DESC";
-
-        if(sortOrderSelected != null && sortOrderSelected.equals(this.getString(R.string.pref_sort_order_vote_average))) {
-            sortOrder = MovieEntry.COLUMN_VOTE_AVERAGE + " DESC";
-        }
-
-        Uri weatherForLocationUri = PopularMoviesContract.MovieEntry.buildMovieUri();
-
-        return new CursorLoader(this,
-                weatherForLocationUri,
-                MOVIE_COLUMNS,
-                null,
-                null,
-                sortOrder);
+        return null;
     }
 
     @Override

@@ -74,7 +74,12 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
         }
 
         holder.tv_genre.setText("Rating: "+movies.getVoteAverage().toString());
-        Picasso.with(context).load("http://image.tmdb.org/t/p/w185"+movies.getPosterPath()).into(holder.img_movies);
+        Picasso.with(context)
+                .load("http://image.tmdb.org/t/p/w185"+movies.getPosterPath())
+                .placeholder(R.drawable.ic_image_load)
+                .error(R.drawable.ic_image_error)
+                .into(holder.img_movies);
+
         holder.cv_movie.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

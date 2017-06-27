@@ -28,11 +28,11 @@
         <activity android:name=".DetailActivity"></activity>
         <provider
             android:authorities="id.odt.popularmovies"
-            android:name=".data.PopularMoviesProvider"
+            android:name=".data.DataProvider"
             android:exported="false"
             android:syncable="true" />
         <service
-            android:name=".sync.PopularMoviesAuthenticatorService">
+            android:name=".sync.AuthenticatorService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
@@ -43,7 +43,7 @@
 
         <!-- The SyncAdapter service -->
         <service
-            android:name=".sync.PopularMoviesSyncService"
+            android:name=".sync.SyncService"
             android:exported="true"
             >
             <intent-filter>
