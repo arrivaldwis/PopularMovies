@@ -2,6 +2,9 @@ package id.odt.popularmovies;
 
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
+import android.os.Parcelable;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -14,6 +17,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,6 +29,7 @@ import butterknife.ButterKnife;
 import id.odt.popularmovies.adapter.MoviesAdapter;
 import id.odt.popularmovies.config.APIService;
 import id.odt.popularmovies.config.Constant;
+import id.odt.popularmovies.data.DataContract;
 import id.odt.popularmovies.model.MoviesModel;
 import id.odt.popularmovies.model.MoviesResult;
 import id.odt.popularmovies.sync.SyncAdapter;
@@ -31,7 +37,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MainActivity extends AppCompatActivity {
 
     private String TAG;
 
@@ -44,7 +50,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private GridLayoutManager mGridLayoutManager;
     private MoviesAdapter mAdapter;
     private int sortState = 0;
-    private SharedPreferences mPref = null;
+    private String sortTitle = "";
+    private Parcelable layoutManagerSavedState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         TAG = getPackageName();
+        sortTitle = getString(R.string.title_popular);
         moviesList = new ArrayList<MoviesResult>();
 
         int mNoOfColumns = Constant.calculateNoOfColumns(getApplicationContext());
@@ -60,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mAdapter = new MoviesAdapter(moviesList, this);
         rv_movie.setAdapter(mAdapter);
 
-        loadMovies(sortState);
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -68,6 +75,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
         SyncAdapter.initializeSyncAdapter(this);
+
+        if (savedInstanceState != null) {
+            String sortChange = savedInstanceState.getString("sortState");
+            String sortTitle = savedInstanceState.getString("sortTitle");
+            int positionIndex = Integer.parseInt(savedInstanceState.getString("sortState"));
+            int topView = Integer.parseInt(savedInstanceState.getString("sortState"));
+
+            sortState = Integer.parseInt(sortChange);
+            setTitle(sortTitle);
+            loadMovies(sortState);
+        } else {
+            loadMovies(sortState);
+        }
     }
 
     private void loadMovies(final int sort) {
@@ -76,8 +96,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         APIService service = APIService.retrofit.create(APIService.class);
         Call<MoviesModel> call = null;
-        if (sort == 0) call = service.popularMovie();
-        else call = service.topRatedMovie();
+        if (sort == 0) call = service.loadMovie("popular");
+        else call = service.loadMovie("top_rated");
         call.enqueue(new Callback<MoviesModel>() {
             @Override
             public void onResponse(Call<MoviesModel> call, Response<MoviesModel> response) {
@@ -93,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                         }
                         mAdapter.notifyDataSetChanged();
                         swipeRefresh.setRefreshing(false);
+                        if(layoutManagerSavedState!=null) restoreLayoutManagerPosition();
                     }
                 }
             }
@@ -104,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         });
 
         if(sort == 2) {
-            call = service.popularMovie();
+            call = service.loadMovie("popular");
             call.enqueue(new Callback<MoviesModel>() {
                 @Override
                 public void onResponse(Call<MoviesModel> call, Response<MoviesModel> response) {
@@ -131,26 +152,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private boolean isMovieFavorite(final int movieId) {
         boolean result = false;
-        Set<String> movieIdsFav = null;
 
-        if (mPref == null) {
-            mPref = PreferenceManager.getDefaultSharedPreferences(this);
-        }
+        Uri URL = DataContract.MovieEntry.CONTENT_URI;
 
-        if (mPref.contains(Constant.MOVIE_IDS_FAVOURITE)) {
-            movieIdsFav = mPref.getStringSet(Constant.MOVIE_IDS_FAVOURITE, null);
-        }
+        Uri students = URL;
+        Cursor c = getContentResolver().query(students, null, null, null, DataContract.MovieEntry.COLUMN_MOVIE_ID);
 
-        if (movieIdsFav != null) {
-            Iterator<String> favIterate = movieIdsFav.iterator();
-
-            while (favIterate.hasNext()) {
-                String getMovieId = favIterate.next();
-                if (getMovieId.equals(Integer.toString(movieId))) {
+        if (c.moveToFirst()) {
+            do {
+                if (c.getString(c.getColumnIndex(DataContract.MovieEntry.COLUMN_MOVIE_ID)).equals(Integer.toString(movieId))) {
                     result = true;
                     break;
                 }
-            }
+            } while (c.moveToNext());
         }
         return result;
     }
@@ -167,35 +181,48 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         switch (item.getItemId()) {
             case R.id.sortPopular:
                 sortState = 0;
+                sortTitle = getString(R.string.title_popular);
                 loadMovies(sortState);
-                setTitle(getString(R.string.title_popular));
+                setTitle(sortTitle);
                 return true;
             case R.id.sortTopRated:
                 sortState = 1;
+                sortTitle = getString(R.string.title_top_rated);
                 loadMovies(sortState);
-                setTitle(getString(R.string.title_top_rated));
+                setTitle(sortTitle);
                 return true;
             case R.id.sortFavourite:
                 sortState = 2;
+                sortTitle = getString(R.string.title_favourite);
                 loadMovies(sortState);
-                setTitle(getString(R.string.title_favourite));
+                setTitle(sortTitle);
                 return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return null;
+    protected void onResume() {
+        super.onResume();
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable("myState", rv_movie.getLayoutManager().onSaveInstanceState());
+        outState.putString("sortState", Integer.toString(sortState));
+        outState.putString("sortTitle", sortTitle);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        layoutManagerSavedState = savedInstanceState.getParcelable("myState");
+        super.onRestoreInstanceState(savedInstanceState);
+    }
 
+    private void restoreLayoutManagerPosition() {
+        if (layoutManagerSavedState != null) {
+            rv_movie.getLayoutManager().onRestoreInstanceState(layoutManagerSavedState);
+        }
     }
 }

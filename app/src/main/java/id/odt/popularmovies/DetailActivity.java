@@ -1,9 +1,12 @@
 package id.odt.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -36,6 +39,8 @@ import id.odt.popularmovies.adapter.TrailerAdapter;
 import id.odt.popularmovies.config.APIService;
 import id.odt.popularmovies.config.Constant;
 import id.odt.popularmovies.config.MyLinearLayoutManager;
+import id.odt.popularmovies.data.DataContract;
+import id.odt.popularmovies.data.DataProvider;
 import id.odt.popularmovies.model.ReviewsModel;
 import id.odt.popularmovies.model.ReviewsResult;
 import id.odt.popularmovies.model.TrailerModel;
@@ -92,10 +97,6 @@ public class DetailActivity extends AppCompatActivity {
         reviewsList = new ArrayList<>();
         trailerList = new ArrayList<>();
 
-        if (mPref == null) {
-            mPref = PreferenceManager.getDefaultSharedPreferences(this);
-        }
-
         if (getIntent().getExtras() != null) {
             Intent intent = getIntent();
             movieId = intent.getIntExtra("id", 0);
@@ -127,7 +128,7 @@ public class DetailActivity extends AppCompatActivity {
             loadTrailer();
 
             if (isMovieFavorite()) {
-                img_favourite.setColorFilter(ContextCompat.getColor(getApplicationContext(),R.color.favorite_selected));
+                img_favourite.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.favorite_selected));
             }
 
             img_favourite.setOnClickListener(new View.OnClickListener() {
@@ -137,29 +138,19 @@ public class DetailActivity extends AppCompatActivity {
 
                     int backgroundColorId = -1;
 
-                    Set<String> favoriteMovieIdsSet = null;
-
-                    if (mPref.contains(Constant.MOVIE_IDS_FAVOURITE)) {
-                        favoriteMovieIdsSet = mPref.getStringSet(Constant.MOVIE_IDS_FAVOURITE, null);
-                    }
-
-                    if (favoriteMovieIdsSet == null) {
-                        favoriteMovieIdsSet = new LinkedHashSet<>();
-                    }
+                    ContentValues values = new ContentValues();
 
                     if (isAlreadyFavorite) {
-                        favoriteMovieIdsSet.remove(Integer.toString(movieId));
+                        getContentResolver().delete(DataContract.MovieEntry.CONTENT_URI, DataContract.MovieEntry.COLUMN_MOVIE_ID + "=" + movieId, null);
                         backgroundColorId = R.color.favorite_not_selected;
                         SyncAdapter.syncImmediately(getApplicationContext());
                     } else {
-                        favoriteMovieIdsSet.add(Integer.toString(movieId));
-                        final SharedPreferences.Editor prefsEdit = mPref.edit();
-                        prefsEdit.putStringSet(Constant.MOVIE_IDS_FAVOURITE, favoriteMovieIdsSet);
-                        prefsEdit.commit();
+                        values.put(DataContract.MovieEntry.COLUMN_MOVIE_ID, Integer.toString(movieId));
+                        getContentResolver().insert(DataContract.MovieEntry.CONTENT_URI, values);
                         backgroundColorId = R.color.favorite_selected;
                     }
 
-                    img_favourite.setColorFilter(ContextCompat.getColor(getApplicationContext(),backgroundColorId));
+                    img_favourite.setColorFilter(ContextCompat.getColor(getApplicationContext(), backgroundColorId));
                 }
             });
         }
@@ -174,31 +165,25 @@ public class DetailActivity extends AppCompatActivity {
 
     private boolean isMovieFavorite() {
         boolean result = false;
-        Set<String> favoriteMovieIdsSet = null;
 
-        if (mPref == null) {
-            mPref = PreferenceManager.getDefaultSharedPreferences(this);
-        }
+        Uri URL = DataContract.MovieEntry.CONTENT_URI;
 
-        if (mPref.contains(Constant.MOVIE_IDS_FAVOURITE)) {
-            favoriteMovieIdsSet = mPref.getStringSet(Constant.MOVIE_IDS_FAVOURITE, null);
-        }
+        Uri students = URL;
+        Cursor c = getContentResolver().query(students, null, null, null, DataContract.MovieEntry.COLUMN_MOVIE_ID);
 
-        if (favoriteMovieIdsSet != null) {
-            Iterator<String> favIterator = favoriteMovieIdsSet.iterator();
-
-            while (favIterator.hasNext()) {
-                String favMovieId = favIterator.next();
-                if (favMovieId.equals(Integer.toString(movieId))) {
+        if (c.moveToFirst()) {
+            do {
+                if (c.getString(c.getColumnIndex(DataContract.MovieEntry.COLUMN_MOVIE_ID)).equals(Integer.toString(movieId))) {
                     result = true;
                     break;
                 }
-            }
+            } while (c.moveToNext());
         }
         return result;
     }
 
     private String firstTrailerUrl = "";
+
     private void loadTrailer() {
         trailerList.clear();
 
@@ -216,7 +201,8 @@ public class DetailActivity extends AppCompatActivity {
                             TrailerResult moviesData = movies.getResults().get(i);
                             trailerList.add(moviesData);
                             mTrailerAdapter.notifyDataSetChanged();
-                            if(firstTrailerUrl.isEmpty()) firstTrailerUrl = "https://www.youtube.com/watch?v="+moviesData.getKey();
+                            if (firstTrailerUrl.isEmpty())
+                                firstTrailerUrl = "https://www.youtube.com/watch?v=" + moviesData.getKey();
                         }
                         rv_trailer.setVisibility(View.VISIBLE);
                     }
